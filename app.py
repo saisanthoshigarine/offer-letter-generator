@@ -17,7 +17,6 @@ import base64
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 import io
-from brevo import BrevoAPI
 import json
 from dotenv import load_dotenv
 load_dotenv()
