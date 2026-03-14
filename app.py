@@ -39,15 +39,6 @@ DB = "/opt/render/project/src/offers.db"  # define the database file at the top
 
 def init_db():
     with sqlite3.connect(DB) as conn:
-        # Create users table
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT,
-                password TEXT
-            )
-        """)
-
         # Create offers table
         conn.execute("""
             CREATE TABLE IF NOT EXISTS offers(
