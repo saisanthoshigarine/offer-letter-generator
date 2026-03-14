@@ -742,8 +742,12 @@ def send_mail_function(pdf_path, data):
     # ---------------- GENERATE TOKEN LINKS ----------------
     BASE_URL = os.environ.get("BASE_URL")
     token = str(uuid.uuid4())
+
     accept_link = f"{BASE_URL}/accept/{token}"
     decline_link = f"{BASE_URL}/decline/{token}"
+
+    print("ACCEPT LINK:", accept_link)
+    print("DECLINE LINK:", decline_link)
 
     body_html = f"""
     <p>Hello {data['Name']},</p>
