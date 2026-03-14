@@ -23,7 +23,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
-BASE_URL = os.environ.get("BASE_URL")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -830,7 +830,7 @@ def accept(token):
         )
         conn.commit()
 
-    return "Offer Accepted ✅"
+    return redirect("/dashboard")
 
 @app.route('/decline/<token>')
 def decline(token):
@@ -854,7 +854,7 @@ def decline(token):
         )
         conn.commit()
 
-    return "Offer Declined ❌"
+    return redirect("/dashboard")
 # ---------------- LOGOUT ----------------
 
 @app.route("/logout")
