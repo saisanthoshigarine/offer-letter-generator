@@ -790,23 +790,24 @@ def send_mail_function(pdf_path, data):
         # ---------------- SAVE TO DATABASE ----------------
         with sqlite3.connect(DB) as conn:
             conn.execute("""
-                INSERT INTO offers(
-                    user_id, name, email, role, joining_date,
-                    company, work_type, status, token, sent_time
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                session["user_id"],
-                data["Name"],
-                data["Gmail id"],
-                data["Role"],
-                str(data["Joining date"]),
-                session.get("company"),
-                session.get("worktype"),
-                "action_pending",  # standardized status
-                token,
-                datetime.now().isoformat()
+            INSERT INTO offers(
+                user_id, name, email, role, joining_date,
+                company, work_type, status, token, sent_time
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            session["user_id"],
+            data["Name"],
+            data["Gmail id"],
+            data["Role"],
+            str(data["Joining date"]),
+            session.get("company"),
+            session.get("worktype"),
+            "action_pending",
+            token,
+            datetime.now().isoformat()
             ))
 
+        conn.commit()   # 🔴 ADD THIS
     except Exception as e:
         print(f"❌ Failed to send email to {data['Gmail id']}: {e}")
 # ---------------- ACCEPT / DECLINE ----------------
