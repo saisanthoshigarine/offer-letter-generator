@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Offer Letter Pattern</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background: #f4f6f9;
+        }
+
+        .left-panel {
+            width: 30%;
+            background: linear-gradient(135deg,#0a1f44,#1e3c72);
+            color: white;
+            padding: 80px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .left-panel h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .left-panel p {
+            font-size: 15px;
+            line-height: 1.7;
+            opacity: 0.85;
+        }
+
+        .right-panel {
+            width: 70%;
+            padding: 70px 60px;
+            background: #f4f6f9;
+        }
+
+        .right-panel h2 {
+            font-size: 26px;
+            color: #1b2a4e;
+            margin-bottom: 40px;
+        }
+
+        .pattern-grid {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .pattern-card {
+            text-decoration: none;
+            width: 260px;
+        }
+
+        .pattern-box {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
+            border: 1px solid #e3e6ec;
+        }
+
+        .pattern-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .pattern-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1b2a4e;
+        }
+
+        .pattern-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .select-btn {
+            display: inline-block;
+            padding: 8px 18px;
+            background: #1b3c73;
+            color: white;
+            font-size: 13px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .pattern-box:hover .select-btn {
+            background: #0d2248;
+        }
+
+        @media(max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left-panel,
+            .right-panel {
+                width: 100%;
+                padding: 40px 30px;
+            }
+
+            .pattern-grid {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="left-panel">
+        <h1>Select Pattern</h1>
+        <p>
+            Choose the offer letter design that matches your company branding and 
+            professional standards. Each template follows structured formatting 
+            and corporate styling guidelines.
+        </p>
+    </div>
+
+    <div class="right-panel">
+        <h2>Offer Letter Pattern</h2>
+
+        <div class="pattern-grid">
+            {% for p in patterns %}
+            <a href="{{ url_for('select_pattern', pattern_id=p.id) }}" class="pattern-card">
+                <div class="pattern-box">
+                    <div class="pattern-title">{{ p.name }}</div>
+                    <div class="pattern-desc">
+                        Professional structured format suitable for corporate documentation.
+                    </div>
+                    <div class="select-btn">Select Pattern</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>

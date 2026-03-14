@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Offer Letter Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+min-height:100vh;
+background:#ffffff;
+animation:fadePage 1s ease;
+}
+
+@keyframes fadePage{
+from{opacity:0;}
+to{opacity:1;}
+}
+
+/* MAIN CONTAINER */
+
+.container{
+display:flex;
+min-height:100vh;
+width:100%;
+}
+
+/* LEFT SIDE */
+
+.left{
+flex:1.3;
+background:linear-gradient(135deg,#0a1f44,#1e3c72);
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+border-top-right-radius:300px;
+border-bottom-right-radius:300px;
+}
+
+.left h1{
+font-size:46px;
+line-height:1.4;
+padding:40px;
+}
+
+/* RIGHT SIDE */
+
+.right{
+flex:1;
+background:#f5f7fa;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* LOGIN CARD */
+
+.login-card{
+width:400px;
+padding:45px;
+background:white;
+border-radius:12px;
+box-shadow:0 15px 40px rgba(0,0,0,0.2);
+}
+
+.login-card h2{
+margin-bottom:25px;
+color:#2c5364;
+}
+
+.input-group{
+margin-bottom:18px;
+}
+
+input{
+width:100%;
+padding:14px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:15px;
+}
+
+input:focus{
+outline:none;
+border-color:#2c5364;
+}
+
+.login-btn{
+width:100%;
+padding:14px;
+background:linear-gradient(135deg,#0a1f44,#1e3c72);
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+margin-top:5px;
+}
+
+.login-btn:hover{
+background:#1c364b;
+}
+
+.forgot{
+text-align:right;
+margin-top:-10px;
+margin-bottom:15px;
+}
+
+.forgot a{
+font-size:13px;
+color:#2c5364;
+text-decoration:none;
+}
+
+.create-account{
+text-align:center;
+margin-top:20px;
+font-size:14px;
+}
+
+.create-account a{
+color:#2c5364;
+font-weight:600;
+text-decoration:none;
+}
+
+/* FEATURES SECTION */
+
+.features-section{
+padding:90px 20px;
+background:#f1f4f9;
+text-align:center;
+}
+
+.features-section h2{
+font-size:32px;
+margin-bottom:60px;
+color:#1c364b;
+}
+
+.features-container{
+display:flex;
+justify-content:center;
+gap:60px;
+flex-wrap:wrap;
+}
+
+.feature-box{
+width:280px;
+}
+
+.icon-circle{
+width:90px;
+height:90px;
+background:#e3e9f3;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:36px;
+margin:0 auto 25px auto;
+}
+
+.feature-box h3{
+margin-bottom:12px;
+color:#2c5364;
+}
+
+.feature-box p{
+color:#555;
+font-size:15px;
+line-height:1.6;
+}
+
+/* TOOL INFORMATION SECTION */
+
+.tool-info-section{
+padding:90px 20px;
+background:#ffffff;
+}
+
+.tool-info-container{
+max-width:1000px;
+margin:0 auto;
+}
+
+.tool-info-section h2{
+text-align:center;
+font-size:32px;
+margin-bottom:40px;
+color:#1c364b;
+}
+
+.tool-info-intro{
+text-align:center;
+font-size:16px;
+margin-bottom:40px;
+color:#555;
+line-height:1.8;
+}
+
+.tool-list{
+list-style:none;
+}
+
+.tool-list li{
+background:#f5f7fa;
+padding:18px 22px;
+margin-bottom:15px;
+border-left:5px solid #2c5364;
+border-radius:6px;
+font-size:15px;
+color:#444;
+line-height:1.6;
+}
+
+/* FAQ SECTION */
+
+.faq-section{
+padding:90px 20px;
+background:#f1f4f9;
+text-align:center;
+}
+
+.faq-section h2{
+font-size:32px;
+margin-bottom:50px;
+color:#1c364b;
+}
+
+.faq-container{
+max-width:900px;
+margin:0 auto;
+}
+
+.faq-item{
+background:#ffffff;
+margin-bottom:15px;
+border-radius:8px;
+border:1px solid #e0e6ed;
+overflow:hidden;
+}
+
+.faq-question{
+padding:18px 25px;
+cursor:pointer;
+display:flex;
+justify-content:space-between;
+font-weight:600;
+color:#2c5364;
+}
+
+.faq-answer{
+max-height:0;
+overflow:hidden;
+padding:0 25px;
+text-align:left;
+font-size:14px;
+color:#555;
+line-height:1.6;
+transition:max-height 0.3s ease, padding 0.3s ease;
+}
+
+.faq-item.active .faq-answer{
+max-height:300px;
+padding:15px 25px 20px 25px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="left">
+<h1>
+Welcome to <br>
+Offer Letter <br>
+Generating System
+</h1>
+</div>
+
+<div class="right">
+<div class="login-card">
+
+<h2>Login</h2>
+
+<form method="POST">
+<div class="input-group">
+<input type="text" name="username" placeholder="Username" required>
+</div>
+
+<div class="input-group">
+<input type="password" name="password" placeholder="Password" required>
+</div>
+
+<div class="forgot">
+<a href="/forgot_password">Forgot Password?</a>
+</div>
+
+<button class="login-btn" type="submit">Login</button>
+</form>
+
+<div class="create-account">
+Don't have an account?  
+<a href="/register">Create New Account</a>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- FEATURES SECTION -->
+
+<section class="features-section">
+<h2>Key Features of Our Offer Letter Generator</h2>
+
+<div class="features-container">
+
+<div class="feature-box">
+<div class="icon-circle">📄</div>
+<h3>Easy to Use</h3>
+<p>Simple 4-step process to create professional offer letters in minutes.</p>
+</div>
+
+<div class="feature-box">
+<div class="icon-circle">🔒</div>
+<h3>Secure System</h3>
+<p>Your data is securely handled within the system.</p>
+</div>
+
+<div class="feature-box">
+<div class="icon-circle">⬇</div>
+<h3>Instant Download</h3>
+<p>Download high-quality PDF offer letters instantly.</p>
+</div>
+
+</div>
+</section>
+
+<!-- OFFER LETTER TOOL INFORMATION SECTION -->
+
+<section class="tool-info-section">
+<div class="tool-info-container">
+
+<h2>Offer Letter Generator Tool</h2>
+
+<p class="tool-info-intro">
+An offer letter is a formal document that an employer sends to a candidate who has been selected for a job position. It typically includes the following components:
+</p>
+
+<ul class="tool-list">
+<li><strong>Company Information:</strong> Company details and contact information.</li>
+<li><strong>Job Position:</strong> Title of the offered role.</li>
+<li><strong>Job Description:</strong> Responsibilities and expectations.</li>
+<li><strong>Salary and Compensation:</strong> Salary, benefits, and bonuses.</li>
+<li><strong>Start Date:</strong> Expected joining date.</li>
+<li><strong>Location:</strong> Office or remote details.</li>
+<li><strong>Reporting Structure:</strong> Reporting manager details.</li>
+<li><strong>Benefits and Perks:</strong> Health insurance, leave, etc.</li>
+<li><strong>Conditions of Employment:</strong> Background verification etc.</li>
+<li><strong>Confidentiality Agreements:</strong> NDA or non-compete clauses.</li>
+<li><strong>Acknowledgment:</strong> Signature section for acceptance.</li>
+<li><strong>Contact Information:</strong> HR contact details.</li>
+</ul>
+
+</div>
+</section>
+
+<!-- FAQ SECTION -->
+
+<section class="faq-section">
+<h2>Frequently Asked Questions</h2>
+
+<div class="faq-container">
+
+<div class="faq-item">
+<div class="faq-question">Is this system secure? <span>+</span></div>
+<div class="faq-answer">
+Yes. All employee information is processed securely within the system.
+</div>
+</div>
+
+<div class="faq-item">
+<div class="faq-question">Can I edit the offer letter before sending? <span>+</span></div>
+<div class="faq-answer">
+Yes. You can preview and modify the offer letter before sending or downloading.
+</div>
+</div>
+
+<div class="faq-item">
+<div class="faq-question">Can I download multiple offer letters? <span>+</span></div>
+<div class="faq-answer">
+Yes. The system allows bulk download and bulk email sending.
+</div>
+</div>
+
+</div>
+</section>
+
+<script>
+document.querySelectorAll(".faq-question").forEach(item => {
+item.addEventListener("click", () => {
+item.parentElement.classList.toggle("active");
+});
+});
+</script>
+
+</body>
+</html>

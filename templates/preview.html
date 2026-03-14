@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Preview & Edit Offer Letter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+/* ===== BACKGROUND ===== */
+
+body{
+min-height:100vh;
+background:linear-gradient(135deg,#0a1f44,#1e3c72);
+position:relative;
+overflow-x:hidden;
+}
+
+/* Floating circles */
+
+body::before{
+content:"";
+position:absolute;
+width:700px;
+height:700px;
+background:rgba(255,255,255,0.05);
+border-radius:50%;
+top:-150px;
+left:-150px;
+animation:move1 10s infinite alternate;
+z-index:0;
+}
+
+body::after{
+content:"";
+position:absolute;
+width:600px;
+height:600px;
+background:rgba(255,255,255,0.05);
+border-radius:50%;
+bottom:-180px;
+right:-150px;
+animation:move2 12s infinite alternate;
+z-index:0;
+}
+
+@keyframes move1{
+from{transform:translateY(0)}
+to{transform:translateY(40px)}
+}
+
+@keyframes move2{
+from{transform:translateY(0)}
+to{transform:translateY(-40px)}
+}
+
+/* ===== MAIN WRAPPER ===== */
+
+.preview-container{
+position:relative;
+z-index:1;
+max-width:1600px;      /* Increased width */
+margin:60px auto;
+padding:40px;
+}
+
+.preview-container h2{
+color:white;
+margin-bottom:40px;
+font-weight:500;
+text-align:center;
+font-size:26px;
+}
+
+/* ===== SPLIT LAYOUT ===== */
+
+.split{
+display:flex;
+gap:40px;
+flex-wrap:wrap;
+}
+
+/* ===== GLASS CARDS ===== */
+
+.preview-box,
+.edit-box{
+flex:1;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(15px);
+border-radius:20px;
+padding:35px;
+min-height:750px;     /* Increased height */
+box-shadow:0 20px 50px rgba(0,0,0,0.5);
+border:1px solid rgba(255,255,255,0.1);
+}
+
+/* ===== PDF FRAME ===== */
+
+.preview-content{
+border-radius:15px;
+overflow:hidden;
+border:1px solid rgba(255,255,255,0.2);
+}
+
+iframe{
+width:100%;
+height:750px;   /* Bigger preview */
+border:none;
+background:white;
+}
+
+/* ===== EDIT AREA ===== */
+
+label{
+color:#e0e6ff;
+font-size:15px;
+font-weight:500;
+}
+
+textarea{
+width:100%;
+height:500px;        /* Bigger editor */
+margin-top:15px;
+padding:20px;
+border-radius:12px;
+border:1px solid #ddd;
+background:white;    /* WHITE background */
+color:#222;
+resize:none;
+font-size:15px;
+line-height:1.7;
+box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+textarea:focus{
+outline:none;
+border-color:#2a5298;
+box-shadow:0 0 0 3px rgba(42,82,152,0.2);
+}
+
+/* ===== BUTTONS ===== */
+
+.btn{
+width:100%;
+padding:15px;
+margin-top:20px;
+border:none;
+border-radius:12px;
+font-size:16px;
+cursor:pointer;
+transition:0.3s ease;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+color:white;
+font-weight:500;
+}
+
+.btn:hover{
+transform:translateY(-3px);
+box-shadow:0 15px 30px rgba(0,0,0,0.4);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media(max-width:1100px){
+.split{
+flex-direction:column;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="preview-container">
+    <h2>Preview & Edit Offer Letter</h2>
+
+    <div class="split">
+
+        <!-- PDF Preview -->
+        <div class="preview-box">
+            <div class="preview-content">
+                <iframe src="{{ url_for('preview_file', filename=pdf_file) }}"></iframe>
+            </div>
+        </div>
+
+        <!-- Edit Section -->
+        <div class="edit-box">
+            <form method="POST">
+                <label for="edited_content">Edit Content (optional)</label>
+                <textarea id="edited_content" name="edited_content">{{ content }}</textarea>
+
+                <button name="action" value="send_all" class="btn">
+                    Send All Emails
+                </button>
+
+                <button name="action" value="download_all" class="btn">
+                    Download All PDFs
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
