@@ -29,13 +29,12 @@ app.secret_key = "super_secret_key"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 PDF_FOLDER = os.path.join(BASE_DIR, "generated_letters")
-DB = os.path.join(BASE_DIR, "database.db")
+DB = "/opt/render/project/src/offers.db"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
-# ---------------- DATABASE INIT ----------------
-DB = "/opt/render/project/src/offers.db"  # define the database file at the top
+# ---------------- DATABASE INIT ---------------- 
 
 def init_db():
     with sqlite3.connect(DB) as conn:
@@ -725,8 +724,6 @@ from flask import url_for, session
 import sqlite3
 from datetime import datetime
 import os
-
-DB = "/opt/render/project/src/offers.db"
 
 def send_mail_function(pdf_path, data):
     """
