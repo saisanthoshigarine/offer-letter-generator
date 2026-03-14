@@ -35,6 +35,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
 # ---------------- DATABASE INIT ----------------
+print("BREVO_API_KEY:", os.environ.get("BREVO_API_KEY"))
+print("BASE_URL:", os.environ.get("BASE_URL"))
 DB = "/opt/render/project/src/offers.db"  # define the database file at the top
 
 def init_db():
