@@ -35,7 +35,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
 # ---------------- DATABASE INIT ----------------
-DB = "offers.db"  # define the database file at the top
+DB = "/opt/render/project/src/offers.db"  # define the database file at the top
 
 def init_db():
     with sqlite3.connect(DB) as conn:
@@ -726,7 +726,7 @@ import sqlite3
 from datetime import datetime
 import os
 
-DB = "offers.db"
+DB = "/opt/render/project/src/offers.db"
 
 def send_mail_function(pdf_path, data):
     """
