@@ -746,9 +746,6 @@ def send_mail_function(pdf_path, data):
     accept_link = f"{BASE_URL}/accept/{token}"
     decline_link = f"{BASE_URL}/decline/{token}"
 
-    print("ACCEPT LINK:", accept_link)
-    print("DECLINE LINK:", decline_link)
-
     body_html = f"""
     <p>Hello {data['Name']},</p>
     <p>Please find your offer letter attached.</p>
