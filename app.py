@@ -24,7 +24,7 @@ load_dotenv()
 app = Flask(__name__)
 
 BASE_URL = os.environ.get("BASE_URL")
-app.secret_key = "super_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
