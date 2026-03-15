@@ -37,7 +37,7 @@ os.makedirs(PDF_FOLDER, exist_ok=True)
 # ---------------- DATABASE INIT ----------------
 print("BREVO_API_KEY:", os.environ.get("BREVO_API_KEY"))
 print("BASE_URL:", os.environ.get("BASE_URL"))
-DB = "/opt/render/project/src/offers.db"  # define the database file at the top
+DB = "offers.db"  # define the database file at the top
 
 def init_db():
     with sqlite3.connect(DB) as conn:
@@ -719,7 +719,7 @@ import sqlite3
 from datetime import datetime
 import os
 
-DB = "/opt/render/project/src/offers.db"
+DB = "offers.db"
 
 def send_mail_function(pdf_path, data):
     """
@@ -830,7 +830,7 @@ def accept(token):
         )
         conn.commit()
 
-    return redirect("/dashboard")
+    return "Offer Accepted ✅"
 
 @app.route('/decline/<token>')
 def decline(token):
@@ -854,7 +854,7 @@ def decline(token):
         )
         conn.commit()
 
-    return redirect("/dashboard")
+    return "Offer Declined ❌"
 # ---------------- LOGOUT ----------------
 
 @app.route("/logout")
