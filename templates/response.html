@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Offer Response</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+    margin:0;
+    font-family:Segoe UI;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+}
+
+.card{
+    background:white;
+    color:#333;
+    padding:40px;
+    border-radius:15px;
+    text-align:center;
+    width:320px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+    animation:fadeIn 1s ease;
+}
+
+.icon{
+    font-size:60px;
+    margin-bottom:10px;
+}
+
+.accepted{color:green;}
+.declined{color:red;}
+.invalid{color:orange;}
+
+h2{
+    margin-top:10px;
+}
+
+p{
+    color:#555;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+{% if status == "accepted" %}
+<div class="icon accepted">✔</div>
+<h2>Offer Accepted</h2>
+<p>Thank you for accepting the offer. Welcome to the team!</p>
+
+{% elif status == "declined" %}
+<div class="icon declined">✖</div>
+<h2>Offer Declined</h2>
+<p>Your response has been recorded.</p>
+
+{% elif status == "invalid" %}
+<div class="icon invalid">⚠</div>
+<h2>Invalid Link</h2>
+<p>This offer link is not valid.</p>
+
+{% else %}
+<h2>{{message}}</h2>
+{% endif %}
+
+</div>
+
+</body>
+</html>
