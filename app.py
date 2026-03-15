@@ -808,53 +808,65 @@ def send_mail_function(pdf_path, data):
     except Exception as e:
         print(f"❌ Failed to send email to {data['Gmail id']}: {e}")
 # ---------------- ACCEPT / DECLINE ----------------
-@app.route('/accept/<token>')
+@app.route("/accept/<token>")
 def accept(token):
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
+    try:
+        with sqlite3.connect(DB) as conn:
+            conn.row_factory = sqlite3.Row
 
-        offer = conn.execute(
-            "SELECT status FROM offers WHERE token=?",
-            (token,)
-        ).fetchone()
+            offer = conn.execute(
+                "SELECT status FROM offers WHERE token=?",
+                (token,)
+            ).fetchone()
 
-        if not offer:
-            return "Invalid Offer Link ❌", 404
+            # If token does not exist
+            if offer is None:
+                return "<h2>Invalid Offer Link ❌</h2>"
 
-        if offer["status"] != "action_pending":
-            return "You have already responded to this offer.", 400
+            # If already responded
+            if offer["status"] != "action_pending":
+                return "<h2>You have already responded to this offer.</h2>"
 
-        conn.execute(
-            "UPDATE offers SET status=? WHERE token=?",
-            ("accepted", token)
-        )
-        conn.commit()
+            # Update status
+            conn.execute(
+                "UPDATE offers SET status=? WHERE token=?",
+                ("accepted", token)
+            )
+            conn.commit()
 
-    return "Offer Accepted ✅"
+        return "<h2>Offer Accepted ✅</h2><p>Thank you for accepting the offer.</p>"
 
-@app.route('/decline/<token>')
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
+@app.route("/decline/<token>")
 def decline(token):
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
+    try:
+        with sqlite3.connect(DB) as conn:
+            conn.row_factory = sqlite3.Row
 
-        offer = conn.execute(
-            "SELECT status FROM offers WHERE token=?",
-            (token,)
-        ).fetchone()
+            offer = conn.execute(
+                "SELECT status FROM offers WHERE token=?",
+                (token,)
+            ).fetchone()
 
-        if not offer:
-            return "Invalid Offer Link ❌", 404
+            if offer is None:
+                return "<h2>Invalid Offer Link ❌</h2>"
 
-        if offer["status"] != "action_pending":
-            return "You have already responded to this offer.", 400
+            if offer["status"] != "action_pending":
+                return "<h2>You have already responded to this offer.</h2>"
 
-        conn.execute(
-            "UPDATE offers SET status=? WHERE token=?",
-            ("declined", token)
-        )
-        conn.commit()
+            conn.execute(
+                "UPDATE offers SET status=? WHERE token=?",
+                ("declined", token)
+            )
+            conn.commit()
 
-    return "Offer Declined ❌"
+        return "<h2>Offer Declined ❌</h2><p>Your response has been recorded.</p>"
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 # ---------------- LOGOUT ----------------
 
 @app.route("/logout")
