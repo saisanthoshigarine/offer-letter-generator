@@ -742,8 +742,8 @@ def send_mail_function(pdf_path, data):
     # ---------------- GENERATE TOKEN LINKS ----------------
     token = str(uuid.uuid4())
 
-    accept_link = f"{BASE_URL}/offer_response?action=accept&token={token}"
-    decline_link = f"{BASE_URL}/offer_response?action=decline&token={token}"
+    accept_link = f"{BASE_URL}/accept/{token}"
+    decline_link = f"{BASE_URL}/decline/{token}"
 
     print("ACCEPT LINK:", accept_link)
     print("DECLINE LINK:", decline_link)
@@ -807,48 +807,6 @@ def send_mail_function(pdf_path, data):
         conn.commit()   # 🔴 ADD THIS
     except Exception as e:
         print(f"❌ Failed to send email to {data['Gmail id']}: {e}")
-# ---------------- OFFER RESPONSE ----------------
-@app.route("/offer_response")
-def offer_response():
-
-    token = request.args.get("token")
-    action = request.args.get("action")
-
-    if not token or not action:
-        return "Invalid request"
-
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
-
-        offer = conn.execute(
-            "SELECT status FROM offers WHERE token=?",
-            (token,)
-        ).fetchone()
-
-        if not offer:
-            return "<h2>Invalid Offer Link ❌</h2>"
-
-        if offer["status"] != "action_pending":
-            return "<h2>You have already responded.</h2>"
-
-        if action == "accept":
-            new_status = "accepted"
-            message = "Offer Accepted ✅"
-
-        elif action == "decline":
-            new_status = "declined"
-            message = "Offer Declined ❌"
-
-        else:
-            return "Invalid action"
-
-        conn.execute(
-            "UPDATE offers SET status=? WHERE token=?",
-            (new_status, token)
-        )
-        conn.commit()
-
-    return f"<h2>{message}</h2><p>Your response has been recorded.</p>"
 # ---------------- ACCEPT / DECLINE ----------------
 @app.route("/accept/<token>")
 def accept(token):
