@@ -742,8 +742,8 @@ def send_mail_function(pdf_path, data):
     # ---------------- GENERATE TOKEN LINKS ----------------
     token = str(uuid.uuid4())
 
-    accept_link = f"{BASE_URL}/offer_response?token={token}&action=accept"
-    decline_link = f"{BASE_URL}/offer_response?token={token}&action=decline"
+    accept_link = f"{BASE_URL}/offer_response?action=accept&token={token}"
+    decline_link = f"{BASE_URL}/offer_response?action=decline&token={token}"
 
     print("ACCEPT LINK:", accept_link)
     print("DECLINE LINK:", decline_link)
@@ -815,7 +815,7 @@ def offer_response():
     action = request.args.get("action")
 
     if not token or not action:
-        return render_template("response.html", status="invalid")
+        return "Invalid request"
 
     with sqlite3.connect(DB) as conn:
         conn.row_factory = sqlite3.Row
@@ -826,22 +826,21 @@ def offer_response():
         ).fetchone()
 
         if not offer:
-            return render_template("response.html", status="invalid")
+            return "<h2>Invalid Offer Link ❌</h2>"
 
         if offer["status"] != "action_pending":
-            return render_template(
-                "response.html",
-                message="You have already responded."
-            )
+            return "<h2>You have already responded.</h2>"
 
         if action == "accept":
             new_status = "accepted"
+            message = "Offer Accepted ✅"
 
         elif action == "decline":
             new_status = "declined"
+            message = "Offer Declined ❌"
 
         else:
-            return render_template("response.html", status="invalid")
+            return "Invalid action"
 
         conn.execute(
             "UPDATE offers SET status=? WHERE token=?",
@@ -849,7 +848,7 @@ def offer_response():
         )
         conn.commit()
 
-    return render_template("response.html", status=new_status)
+    return f"<h2>{message}</h2><p>Your response has been recorded.</p>"
 # ---------------- ACCEPT / DECLINE ----------------
 @app.route("/accept/<token>")
 def accept(token):
