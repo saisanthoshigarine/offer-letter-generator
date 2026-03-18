@@ -29,14 +29,11 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 PDF_FOLDER = os.path.join(BASE_DIR, "generated_letters")
-DB = os.path.join(BASE_DIR, "database.db")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
 # ---------------- DATABASE INIT ----------------
-print("BREVO_API_KEY:", os.environ.get("BREVO_API_KEY"))
-print("BASE_URL:", os.environ.get("BASE_URL"))
 DB = "offers.db"  # define the database file at the top
 
 def init_db():
@@ -693,8 +690,7 @@ def generate_pdf(content, preview=False):
         return file_name
 
     return file_path
-
-    # -------- MERGE WITH LETTERHEAD --------
+# -------- MERGE WITH LETTERHEAD --------
     letterhead_pdf = PdfReader(letterhead_path)
     content_pdf = PdfReader(packet)
     writer = PdfWriter()
@@ -834,7 +830,7 @@ def accept(token):
             )
             conn.commit()
 
-        return "<h2>Offer Accepted ✅</h2><p>Thank you for accepting the offer.</p>"
+        return render_template("response.html", status="accepted")
 
     except Exception as e:
         return f"Error: {str(e)}"
@@ -863,7 +859,7 @@ def decline(token):
             )
             conn.commit()
 
-        return "<h2>Offer Declined ❌</h2><p>Your response has been recorded.</p>"
+            return render_template("response.html", status="declined")
 
     except Exception as e:
         return f"Error: {str(e)}"
