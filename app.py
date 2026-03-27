@@ -5,7 +5,6 @@ import sqlite3
 import os
 import pandas as pd
 import uuid
-from flask import Flask, render_template, request
 from datetime import datetime, timedelta
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -94,7 +93,7 @@ def init_db():
                 verification_token TEXT
             )
         """)
-
+    init_db()
     print("✅ Tables ready")
 # ---------------- LOGIN REQUIRED ----------------
 
@@ -649,7 +648,7 @@ def preview():
                     Joining_date=row["Joining date"]
                 ), preview=False)
 
-                send_mail_function(pdf_path, row)
+                send_mail_function(pdf_path, row, session["user_id"])
 
             return redirect("/dashboard")
 
@@ -781,7 +780,7 @@ import os
 
 DB = "offers.db"
 
-def send_mail_function(pdf_path, data):
+def send_mail_function(pdf_path, data, user_id):
     """
     Send an offer letter email via Brevo with tokenized accept/decline links,
     and save the offer record to DB with status 'action_pending'.
@@ -910,19 +909,19 @@ Please respond within <b>48 hours</b>.
                 user_id, name, email, role, joining_date,
                 company, work_type, status, token, sent_time
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            session["user_id"],
-            data["Name"],
-            data["Gmail id"],
-            data["Role"],
-            str(data["Joining date"]),
-            session.get("company"),
-            session.get("worktype"),
-            "action_pending",
-            token,
-            datetime.now().isoformat()
-        ))
-
+            """, (
+                user_id,   # ✅ FIXED
+                data["Name"],
+                data["Gmail id"],
+                data["Role"],
+                str(data["Joining date"]),
+                session.get("company"),
+                session.get("worktype"),
+                "action_pending",
+                token,
+                datetime.now().isoformat()
+            ))
+            
         conn.commit()
 
     except Exception as e:
