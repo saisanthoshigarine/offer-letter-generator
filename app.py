@@ -93,7 +93,15 @@ def init_db():
             )
         """)
     print("✅ Tables 'users' and 'offers' are ready.")
-
+    conn.execute("""
+        SELECT o.*, eh.verification_status
+        FROM offers o
+        LEFT JOIN employment_history eh
+        ON o.token = eh.verification_token
+        WHERE o.user_id = ?
+        """,
+        (session["user_id"],)
+    ).fetchall()
 # Call the function once at app startup
 init_db()
 # ---------------- LOGIN REQUIRED ----------------
