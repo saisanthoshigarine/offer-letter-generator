@@ -308,6 +308,17 @@ def dashboard():
             "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='cancelled'",
             (session["user_id"],)
         ).fetchone()[0]
+        verified = conn.execute("""
+            SELECT COUNT(*) FROM employment_history WHERE verification_status='verified'
+            """).fetchone()[0]
+
+        verification_pending = conn.execute("""
+            SELECT COUNT(*) FROM employment_history WHERE verification_status='pending'
+            """).fetchone()[0]
+
+        rejected = conn.execute("""
+            SELECT COUNT(*) FROM employment_history WHERE verification_status='rejected'
+            """).fetchone()[0]
 
     return render_template(
         "dashboard.html",
