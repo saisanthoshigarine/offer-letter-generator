@@ -3,9 +3,10 @@ from flask import Flask, render_template, request, redirect, session, url_for, s
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
+from sib_api_v3_sdk import ApiClient, Configuration, TransactionalEmailsApi
+from sib_api_v3_sdk.models import SendSmtpEmail
 import pandas as pd
 import uuid
-from flask import Flask, render_template, request
 from datetime import datetime, timedelta
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -93,17 +94,13 @@ def init_db():
             )
         """)
     print("✅ Tables 'users' and 'offers' are ready.")
-    conn.execute("""
-        SELECT o.*, eh.verification_status
-        FROM offers o
-        LEFT JOIN employment_history eh
-        ON o.token = eh.verification_token
-        WHERE o.user_id = ?
-        """,
-        (session["user_id"],)
-    ).fetchall()
 # Call the function once at app startup
 init_db()
+with sqlite3.connect(DB) as conn:
+    try:
+        conn.execute("ALTER TABLE offers ADD COLUMN verification_status TEXT DEFAULT 'pending'")
+    except:
+        pass
 # ---------------- LOGIN REQUIRED ----------------
 
 def login_required(f):
@@ -308,17 +305,20 @@ def dashboard():
             "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='cancelled'",
             (session["user_id"],)
         ).fetchone()[0]
-        verified = conn.execute("""
-            SELECT COUNT(*) FROM employment_history WHERE verification_status='verified'
-            """).fetchone()[0]
+        verified = conn.execute(
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND verification_status='verified'",
+            (session["user_id"],)
+        ).fetchone()[0]
 
-        verification_pending = conn.execute("""
-            SELECT COUNT(*) FROM employment_history WHERE verification_status='pending'
-            """).fetchone()[0]
+        verification_pending = conn.execute(
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND verification_status='pending'",
+            (session["user_id"],)
+        ).fetchone()[0]
 
-        rejected = conn.execute("""
-            SELECT COUNT(*) FROM employment_history WHERE verification_status='rejected'
-            """).fetchone()[0]
+        rejected = conn.execute(
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND verification_status='rejected'",
+            (session["user_id"],)
+        ).fetchone()[0]
 
     return render_template(
         "dashboard.html",
@@ -779,14 +779,6 @@ def generate_pdf(content, preview=False):
 
     return file_path
 # ---------------- SEND MAIL ----------------
-from sib_api_v3_sdk import ApiClient, Configuration, TransactionalEmailsApi
-from sib_api_v3_sdk.models import SendSmtpEmail
-import base64, uuid
-from flask import url_for, session, render_template
-import sqlite3
-from datetime import datetime
-import os
-
 DB = "offers.db"
 
 def send_mail_function(pdf_path, data):
