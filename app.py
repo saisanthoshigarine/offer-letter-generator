@@ -773,9 +773,11 @@ def send_mail_function(pdf_path, data):
 
     accept_link = f"{BASE_URL}/accept/{token}"
     decline_link = f"{BASE_URL}/decline/{token}"
-
+    bg_link = f"{BASE_URL}/bg-verification/{token}"
+    
     print("ACCEPT LINK:", accept_link)
     print("DECLINE LINK:", decline_link)
+
 
     body_html = f"""
 <div style="background:#f5f7fb;padding:40px 20px;font-family:Arial,Helvetica,sans-serif;">
@@ -837,8 +839,42 @@ Decline Offer
 </td>
 </tr>
 
+<!-- 🔥 NEW BACKGROUND VERIFICATION SECTION -->
+
 <tr>
 <td align="center" style="padding-top:35px;">
+
+<div style="background:#f1f5ff;border-radius:6px;padding:20px;margin-top:10px;">
+
+<h3 style="color:#1a73e8;margin-bottom:10px;">
+Background Verification
+</h3>
+
+<p style="font-size:14px;color:#555;line-height:1.6;">
+As part of our hiring process, please complete your background verification form.
+This step is mandatory for onboarding.
+</p>
+
+<a href="{bg_link}"
+style="background:#1a73e8;color:white;
+padding:10px 24px;
+text-decoration:none;
+font-size:14px;
+font-weight:600;
+border-radius:5px;
+display:inline-block;margin-top:10px;">
+Complete Verification
+</a>
+
+</div>
+
+</td>
+</tr>
+
+<!-- END SECTION -->
+
+<tr>
+<td align="center" style="padding-top:25px;">
 
 <p style="font-size:13px;color:#888;">
 Please respond within <b>48 hours</b>.
