@@ -1,31 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Background Verification</title>
+
+<style>
+
+body{
+    font-family: 'Segoe UI', sans-serif;
+    background:#f5f7fb;
+}
+
+.container{
+    width:600px;
+    margin:40px auto;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input, select{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
+
+button{
+    background:#1a73e8;
+    color:white;
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    margin-top:20px;
+    width:100%;
+    font-weight:600;
+}
+
+.company-block{
+    margin-top:15px;
+    padding:10px;
+    border:1px dashed #ccc;
+    border-radius:6px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Background Verification</h2>
+
 <form method="POST">
 
 <input name="name" placeholder="Full Name" required>
-<input name="phone" placeholder="Phone" required>
+<input name="phone" placeholder="Phone Number" required>
+<input name="email" placeholder="Gmail ID" required>
 <input name="address" placeholder="Address" required>
 
-<h3>Previous Companies</h3>
+<input name="aadhaar" placeholder="Aadhaar Number">
+<input name="pan" placeholder="PAN Number">
 
-<div id="companies">
-    <div>
+<select name="experience" onchange="toggleCompanies(this.value)">
+<option value="">Select Experience</option>
+<option value="fresher">Fresher</option>
+<option value="experienced">Experienced</option>
+</select>
+
+<div id="companies" style="display:none;">
+    <h3>Previous Companies</h3>
+
+    <div class="company-block">
         <input name="company[]" placeholder="Company Name">
         <input name="hr_email[]" placeholder="HR Email">
         <input name="role[]" placeholder="Role">
         <input name="start_date[]" placeholder="Start Date">
         <input name="end_date[]" placeholder="End Date">
     </div>
+
+    <button type="button" onclick="addCompany()">+ Add More</button>
 </div>
 
-<button type="button" onclick="addCompany()">+ Add More</button>
-
-<button type="submit">Submit</button>
+<button type="submit">Submit Verification</button>
 
 </form>
 
+</div>
+
 <script>
+function toggleCompanies(val){
+    document.getElementById("companies").style.display =
+        val === "experienced" ? "block" : "none";
+}
+
 function addCompany(){
     document.getElementById("companies").innerHTML += `
-    <div>
+    <div class="company-block">
         <input name="company[]" placeholder="Company Name">
         <input name="hr_email[]" placeholder="HR Email">
         <input name="role[]" placeholder="Role">
@@ -34,3 +112,6 @@ function addCompany(){
     </div>`;
 }
 </script>
+
+</body>
+</html>

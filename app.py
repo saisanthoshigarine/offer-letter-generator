@@ -964,12 +964,100 @@ def accept(token):
             )
             conn.commit()
 
-        return render_template("response.html", status="accepted")
+        # 🔥 BG Verification Link (NEW)
+        bg_link = f"{BASE_URL}/bg-verification/{token}"
+
+        # 🔥 Render upgraded UI instead of simple response
+        return f"""
+        <html>
+        <head>
+        <title>Offer Accepted</title>
+
+        <style>
+            body {{
+                font-family: 'Segoe UI', sans-serif;
+                background:#f5f7fb;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                height:100vh;
+            }}
+
+            .card {{
+                background:white;
+                padding:35px;
+                border-radius:12px;
+                box-shadow:0 10px 30px rgba(0,0,0,0.1);
+                width:420px;
+                text-align:center;
+            }}
+
+            .step {{
+                display:flex;
+                justify-content:space-between;
+                margin:25px 0;
+            }}
+
+            .circle {{
+                width:35px;
+                height:35px;
+                border-radius:50%;
+                line-height:35px;
+                color:white;
+                font-weight:bold;
+            }}
+
+            .done {{ background:#2e7d32; }}
+            .pending {{ background:#ccc; }}
+
+            a {{
+                display:inline-block;
+                margin-top:20px;
+                background:#1a73e8;
+                color:white;
+                padding:12px 25px;
+                text-decoration:none;
+                border-radius:6px;
+                font-weight:600;
+            }}
+        </style>
+
+        </head>
+
+        <body>
+
+        <div class="card">
+
+            <h2>🎉 Offer Accepted</h2>
+            <p>You’re almost done. Complete the next step.</p>
+
+            <!-- 🔥 Progress Tracker -->
+            <div class="step">
+                <div>
+                    <div class="circle done">1</div>
+                    <small>Accepted</small>
+                </div>
+
+                <div>
+                    <div class="circle pending">2</div>
+                    <small>Verification</small>
+                </div>
+            </div>
+
+            <p>Proceed to Background Verification</p>
+
+            <a href="{bg_link}">
+                Continue →
+            </a>
+
+        </div>
+
+        </body>
+        </html>
+        """
 
     except Exception as e:
         return f"Error: {str(e)}"
-
-
 # ---------------- DECLINE ----------------
 @app.route("/decline/<token>")
 def decline(token):
