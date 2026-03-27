@@ -5,6 +5,7 @@ import sqlite3
 import os
 import pandas as pd
 import uuid
+from flask import Flask, render_template, request
 from datetime import datetime, timedelta
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -41,6 +42,7 @@ DB = "offers.db"  # define the database file at the top
 
 def init_db():
     with sqlite3.connect(DB) as conn:
+        # Create offers table
         conn.execute("""
             CREATE TABLE IF NOT EXISTS offers(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,48 +55,55 @@ def init_db():
                 work_type TEXT,
                 status TEXT,
                 token TEXT,
-                sent_time TEXT,
-                verification_status TEXT DEFAULT 'pending'
+                sent_time TEXT
             )
         """)
-
         conn.execute("""
             CREATE TABLE IF NOT EXISTS users(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT,
-                email TEXT,
-                password TEXT,
-                reset_token TEXT,
-                reset_expiry TEXT
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            email TEXT,
+            password TEXT,
+            reset_token TEXT,
+            reset_expiry TEXT
             )
         """)
-
         conn.execute("""
             CREATE TABLE IF NOT EXISTS bg_verifications(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                offer_token TEXT,
-                candidate_name TEXT,
-                phone TEXT,
-                address TEXT,
-                submitted_at TEXT
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            offer_token TEXT,
+            candidate_name TEXT,
+            phone TEXT,
+            address TEXT,
+            submitted_at TEXT
             )
         """)
 
         conn.execute("""
             CREATE TABLE IF NOT EXISTS employment_history(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                bg_id INTEGER,
-                company_name TEXT,
-                hr_email TEXT,
-                role TEXT,
-                start_date TEXT,
-                end_date TEXT,
-                verification_status TEXT DEFAULT 'pending',
-                verification_token TEXT
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bg_id INTEGER,
+            company_name TEXT,
+            hr_email TEXT,
+            role TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            verification_status TEXT DEFAULT 'pending',
+            verification_token TEXT
             )
         """)
-    init_db()
-    print("✅ Tables ready")
+    print("✅ Tables 'users' and 'offers' are ready.")
+    conn.execute("""
+        SELECT o.*, eh.verification_status
+        FROM offers o
+        LEFT JOIN employment_history eh
+        ON o.token = eh.verification_token
+        WHERE o.user_id = ?
+        """,
+        (session["user_id"],)
+    ).fetchall()
+# Call the function once at app startup
+init_db()
 # ---------------- LOGIN REQUIRED ----------------
 
 def login_required(f):
@@ -648,7 +657,7 @@ def preview():
                     Joining_date=row["Joining date"]
                 ), preview=False)
 
-                send_mail_function(pdf_path, row, session["user_id"])
+                send_mail_function(pdf_path, row)
 
             return redirect("/dashboard")
 
@@ -780,7 +789,7 @@ import os
 
 DB = "offers.db"
 
-def send_mail_function(pdf_path, data, user_id):
+def send_mail_function(pdf_path, data):
     """
     Send an offer letter email via Brevo with tokenized accept/decline links,
     and save the offer record to DB with status 'action_pending'.
@@ -909,19 +918,19 @@ Please respond within <b>48 hours</b>.
                 user_id, name, email, role, joining_date,
                 company, work_type, status, token, sent_time
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                user_id,   # ✅ FIXED
-                data["Name"],
-                data["Gmail id"],
-                data["Role"],
-                str(data["Joining date"]),
-                session.get("company"),
-                session.get("worktype"),
-                "action_pending",
-                token,
-                datetime.now().isoformat()
-            ))
-            
+        """, (
+            session["user_id"],
+            data["Name"],
+            data["Gmail id"],
+            data["Role"],
+            str(data["Joining date"]),
+            session.get("company"),
+            session.get("worktype"),
+            "action_pending",
+            token,
+            datetime.now().isoformat()
+        ))
+
         conn.commit()
 
     except Exception as e:
