@@ -326,9 +326,11 @@ def dashboard():
         pending=pending,
         accepted=accepted,
         declined=declined,
-        cancelled=cancelled
+        cancelled=cancelled,
+        verified=verified,
+        verification_pending=verification_pending,
+        rejected=rejected
     )
-#---------------- DOWNLOAD EXCEL TEMPLATE ----------------
 # ---------------- DOWNLOAD TEMPLATE ----------------
 @app.route("/download_template")
 def download_template():
