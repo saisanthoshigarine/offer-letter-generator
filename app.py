@@ -42,7 +42,6 @@ DB = "offers.db"  # define the database file at the top
 
 def init_db():
     with sqlite3.connect(DB) as conn:
-        # Create offers table
         conn.execute("""
             CREATE TABLE IF NOT EXISTS offers(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,55 +54,48 @@ def init_db():
                 work_type TEXT,
                 status TEXT,
                 token TEXT,
-                sent_time TEXT
+                sent_time TEXT,
+                verification_status TEXT DEFAULT 'pending'
             )
         """)
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS users(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            email TEXT,
-            password TEXT,
-            reset_token TEXT,
-            reset_expiry TEXT
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                email TEXT,
+                password TEXT,
+                reset_token TEXT,
+                reset_expiry TEXT
             )
         """)
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS bg_verifications(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            offer_token TEXT,
-            candidate_name TEXT,
-            phone TEXT,
-            address TEXT,
-            submitted_at TEXT
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                offer_token TEXT,
+                candidate_name TEXT,
+                phone TEXT,
+                address TEXT,
+                submitted_at TEXT
             )
         """)
 
         conn.execute("""
             CREATE TABLE IF NOT EXISTS employment_history(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            bg_id INTEGER,
-            company_name TEXT,
-            hr_email TEXT,
-            role TEXT,
-            start_date TEXT,
-            end_date TEXT,
-            verification_status TEXT DEFAULT 'pending',
-            verification_token TEXT
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bg_id INTEGER,
+                company_name TEXT,
+                hr_email TEXT,
+                role TEXT,
+                start_date TEXT,
+                end_date TEXT,
+                verification_status TEXT DEFAULT 'pending',
+                verification_token TEXT
             )
         """)
-    print("✅ Tables 'users' and 'offers' are ready.")
-    conn.execute("""
-        SELECT o.*, eh.verification_status
-        FROM offers o
-        LEFT JOIN employment_history eh
-        ON o.token = eh.verification_token
-        WHERE o.user_id = ?
-        """,
-        (session["user_id"],)
-    ).fetchall()
-# Call the function once at app startup
-init_db()
+
+    print("✅ Tables ready")
 # ---------------- LOGIN REQUIRED ----------------
 
 def login_required(f):
