@@ -303,8 +303,17 @@ Generating System
 <input type="password" name="password" placeholder="Password" required>
 </div>
 
-<div class="forgot">
-<a href="/forgot_password">Forgot Password?</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+
+    <label style="font-size:13px; color:#555;">
+        <input type="checkbox" name="remember" style="margin-right:5px;">
+        Remember Me
+    </label>
+
+    <a href="/forgot_password" style="font-size:13px; color:#2c5364; text-decoration:none;">
+        Forgot Password?
+    </a>
+
 </div>
 
 <button class="login-btn" type="submit">Login</button>

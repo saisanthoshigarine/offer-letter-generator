@@ -1,0 +1,36 @@
+<form method="POST">
+
+<input name="name" placeholder="Full Name" required>
+<input name="phone" placeholder="Phone" required>
+<input name="address" placeholder="Address" required>
+
+<h3>Previous Companies</h3>
+
+<div id="companies">
+    <div>
+        <input name="company[]" placeholder="Company Name">
+        <input name="hr_email[]" placeholder="HR Email">
+        <input name="role[]" placeholder="Role">
+        <input name="start_date[]" placeholder="Start Date">
+        <input name="end_date[]" placeholder="End Date">
+    </div>
+</div>
+
+<button type="button" onclick="addCompany()">+ Add More</button>
+
+<button type="submit">Submit</button>
+
+</form>
+
+<script>
+function addCompany(){
+    document.getElementById("companies").innerHTML += `
+    <div>
+        <input name="company[]" placeholder="Company Name">
+        <input name="hr_email[]" placeholder="HR Email">
+        <input name="role[]" placeholder="Role">
+        <input name="start_date[]" placeholder="Start Date">
+        <input name="end_date[]" placeholder="End Date">
+    </div>`;
+}
+</script>

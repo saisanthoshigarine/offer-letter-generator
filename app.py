@@ -1,5 +1,6 @@
 import token
 from flask import Flask, render_template, request, redirect, session, url_for, send_file
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 import pandas as pd
@@ -25,6 +26,9 @@ app = Flask(__name__)
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
+
+# ✅ Persistent session (7 days)
+app.permanent_session_lifetime = timedelta(days=30)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
@@ -64,6 +68,30 @@ def init_db():
             reset_expiry TEXT
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS bg_verifications(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            offer_token TEXT,
+            candidate_name TEXT,
+            phone TEXT,
+            address TEXT,
+            submitted_at TEXT
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS employment_history(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bg_id INTEGER,
+            company_name TEXT,
+            hr_email TEXT,
+            role TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            verification_status TEXT DEFAULT 'pending',
+            verification_token TEXT
+            )
+        """)
     print("✅ Tables 'users' and 'offers' are ready.")
 
 # Call the function once at app startup
@@ -80,7 +108,6 @@ def login_required(f):
     return wrap
 
 # ---------------- LOGIN ----------------
-
 @app.route("/", methods=["GET","POST"])
 def login():
     if request.method == "POST":
@@ -88,19 +115,27 @@ def login():
         password = request.form["password"]
 
         with sqlite3.connect(DB) as conn:
+            conn.row_factory = sqlite3.Row
             user = conn.execute(
-                "SELECT * FROM users WHERE username=? AND password=?",
-                (username,password)
+                "SELECT * FROM users WHERE username=?",
+                (username,)
             ).fetchone()
 
-        if user:
-            session["user_id"] = user[0]
+        if user and check_password_hash(user["password"], password):
+
+            # ✅ Remember Me logic
+            if "remember" in request.form:
+                session.permanent = True
+            else:
+                session.permanent = False
+
+            session["user_id"] = user["id"]
             return redirect("/dashboard")
+
         else:
             return "Invalid Credentials"
 
     return render_template("login.html")
-
 # ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -108,9 +143,13 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
 
+        hashed_password = generate_password_hash(password)
+
         with sqlite3.connect(DB) as conn:
-            conn.execute("INSERT INTO users(username,password) VALUES(?,?)",
-                         (username,password))
+            conn.execute(
+                "INSERT INTO users(username,password) VALUES(?,?)",
+                (username, hashed_password)
+            )
 
         return redirect("/")
 
@@ -198,7 +237,7 @@ def reset_password(token):
             return "Reset link expired"
 
         if request.method == "POST":
-            new_password = request.form["password"]
+            new_password = generate_password_hash(request.form["password"])
 
             conn.execute(
                 "UPDATE users SET password=?, reset_token=NULL, reset_expiry=NULL WHERE id=?",
@@ -710,7 +749,7 @@ def generate_pdf(content, preview=False):
 from sib_api_v3_sdk import ApiClient, Configuration, TransactionalEmailsApi
 from sib_api_v3_sdk.models import SendSmtpEmail
 import base64, uuid
-from flask import url_for, session
+from flask import url_for, session, render_template
 import sqlite3
 from datetime import datetime
 import os
@@ -724,13 +763,7 @@ def send_mail_function(pdf_path, data):
     """
 
     # ---------------- CONFIGURE BREVO ----------------
-    from sib_api_v3_sdk import ApiClient, Configuration, TransactionalEmailsApi
-    from sib_api_v3_sdk.models import SendSmtpEmail
-    import base64, uuid
-    from datetime import datetime
-
     configuration = Configuration()
-    # Replace with your **full-access transactional email API key**
     configuration.api_key['api-key'] = os.environ.get("BREVO_API_KEY")
 
     api_instance = TransactionalEmailsApi(ApiClient(configuration))
@@ -745,14 +778,79 @@ def send_mail_function(pdf_path, data):
     print("DECLINE LINK:", decline_link)
 
     body_html = f"""
-    <p>Hello {data['Name']},</p>
-    <p>Please find your offer letter attached.</p>
-    <p>
-        ✅ <a href="{accept_link}">Accept Offer</a><br>
-        ❌ <a href="{decline_link}">Decline Offer</a>
-    </p>
-    <p>Respond within 48 hours.</p>
-    """
+<div style="background:#f5f7fb;padding:40px 20px;font-family:Arial,Helvetica,sans-serif;">
+
+<table align="center" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:40px;">
+    
+<tr>
+<td align="center">
+
+<h2 style="color:#2c3e50;margin-bottom:10px;">Offer Letter</h2>
+
+<p style="font-size:16px;color:#333;margin-top:20px;">
+Hello <b>{data['Name']}</b>,
+</p>
+
+<p style="font-size:15px;color:#555;line-height:1.6;margin-top:10px;">
+Congratulations! We are pleased to share your offer letter with you.
+Please review the attached document and confirm your response.
+</p>
+
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding-top:30px;">
+
+<table cellpadding="0" cellspacing="0">
+<tr>
+
+<td align="center" style="padding-right:15px;">
+<a href="{accept_link}"
+style="background:#2e7d32;color:white;
+padding:12px 28px;
+text-decoration:none;
+font-size:15px;
+font-weight:600;
+border-radius:6px;
+display:inline-block;">
+Accept Offer
+</a>
+</td>
+
+<td align="center">
+<a href="{decline_link}"
+style="background:#c62828;color:white;
+padding:12px 28px;
+text-decoration:none;
+font-size:15px;
+font-weight:600;
+border-radius:6px;
+display:inline-block;">
+Decline Offer
+</a>
+</td>
+
+</tr>
+</table>
+
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding-top:35px;">
+
+<p style="font-size:13px;color:#888;">
+Please respond within <b>48 hours</b>.
+</p>
+
+</td>
+</tr>
+
+</table>
+
+</div>
+"""
 
     # ---------------- READ PDF AS BASE64 ----------------
     try:
@@ -798,12 +896,15 @@ def send_mail_function(pdf_path, data):
             "action_pending",
             token,
             datetime.now().isoformat()
-            ))
+        ))
 
-        conn.commit()   # 🔴 ADD THIS
+        conn.commit()
+
     except Exception as e:
         print(f"❌ Failed to send email to {data['Gmail id']}: {e}")
-# ---------------- ACCEPT / DECLINE ----------------
+
+
+# ---------------- ACCEPT ----------------
 @app.route("/accept/<token>")
 def accept(token):
     try:
@@ -815,15 +916,12 @@ def accept(token):
                 (token,)
             ).fetchone()
 
-            # If token does not exist
             if offer is None:
                 return "<h2>Invalid Offer Link ❌</h2>"
 
-            # If already responded
             if offer["status"] != "action_pending":
                 return "<h2>You have already responded to this offer.</h2>"
 
-            # Update status
             conn.execute(
                 "UPDATE offers SET status=? WHERE token=?",
                 ("accepted", token)
@@ -836,6 +934,7 @@ def accept(token):
         return f"Error: {str(e)}"
 
 
+# ---------------- DECLINE ----------------
 @app.route("/decline/<token>")
 def decline(token):
     try:
@@ -859,10 +958,125 @@ def decline(token):
             )
             conn.commit()
 
-            return render_template("response.html", status="declined")
+        return render_template("response.html", status="declined")
 
     except Exception as e:
         return f"Error: {str(e)}"
+#----------------- BACKGROUND VERIFICATION ----------------
+@app.route("/bg-verification/<token>", methods=["GET", "POST"])
+def bg_verification(token):
+
+    if request.method == "POST":
+
+        name = request.form["name"]
+        phone = request.form["phone"]
+        address = request.form["address"]
+
+        companies = request.form.getlist("company[]")
+        emails = request.form.getlist("hr_email[]")
+        roles = request.form.getlist("role[]")
+        starts = request.form.getlist("start_date[]")
+        ends = request.form.getlist("end_date[]")
+
+        with sqlite3.connect(DB) as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                INSERT INTO bg_verifications
+                (offer_token, candidate_name, phone, address, submitted_at)
+                VALUES (?, ?, ?, ?, ?)
+            """, (token, name, phone, address, datetime.now().isoformat()))
+
+            bg_id = cursor.lastrowid
+
+            # 🔥 Send emails to previous companies
+            for i in range(len(companies)):
+
+                verify_token = str(uuid.uuid4())
+
+                cursor.execute("""
+                    INSERT INTO employment_history
+                    (bg_id, company_name, hr_email, role, start_date, end_date, verification_token)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    bg_id,
+                    companies[i],
+                    emails[i],
+                    roles[i],
+                    starts[i],
+                    ends[i],
+                    verify_token
+                ))
+
+                send_verification_email(
+                    emails[i],
+                    name,
+                    roles[i],
+                    starts[i],
+                    ends[i],
+                    verify_token
+                )
+
+            conn.commit()
+
+        return "<h2>Verification Submitted ✅</h2>"
+
+    return render_template("bg_form.html")
+#----------------- SEND VERIFICATION EMAIL ----------------
+def send_verification_email(email, candidate, role, start, end, token):
+    
+    verify_link = f"{BASE_URL}/verify-employer/{token}"
+
+    body = f"""
+    <p>Hello,</p>
+
+    <p>{candidate} has listed your company as previous employer.</p>
+
+    <p>Role: {role}</p>
+    <p>Duration: {start} to {end}</p>
+
+    <p>
+        ✅ <a href="{verify_link}?status=verified">Verify</a><br>
+        ❌ <a href="{verify_link}?status=rejected">Reject</a>
+    </p>
+    """
+
+    configuration = Configuration()
+    configuration.api_key['api-key'] = os.environ.get("BREVO_API_KEY")
+
+    api_instance = TransactionalEmailsApi(ApiClient(configuration))
+
+    email_data = SendSmtpEmail(
+        to=[{"email": email}],
+        sender={"email": os.environ.get("SENDER_EMAIL")},
+        subject="Employment Verification Request",
+        html_content=body
+    )
+
+    try:
+        api_instance.send_transac_email(email_data)
+        print("Verification mail sent to", email)
+    except Exception as e:
+        print("Error:", e)
+#----------------- EMPLOYER VERIFICATION RESPONSE ----------------
+@app.route("/verify-employer/<token>")
+def verify_employer(token):
+
+    status = request.args.get("status")
+
+    if status not in ["verified", "rejected"]:
+        return "Invalid"
+
+    with sqlite3.connect(DB) as conn:
+        conn.execute("""
+            UPDATE employment_history
+            SET verification_status=?
+            WHERE verification_token=?
+        """, (status, token))
+
+        conn.commit()
+
+    return f"<h2>Response Recorded: {status.upper()}</h2>"
 # ---------------- LOGOUT ----------------
 
 @app.route("/logout")
