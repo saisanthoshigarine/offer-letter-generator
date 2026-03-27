@@ -759,3 +759,21 @@ transition:0.3s;
 color:#ffbe76;
 text-decoration:underline;
 }
+.status-grid{
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    gap:20px;
+    margin-top:30px;
+}
+
+.card{
+    padding:20px;
+    border-radius:10px;
+    color:white;
+    text-align:center;
+    font-weight:600;
+}
+
+.green{ background:#2e7d32; }
+.yellow{ background:#f9a825; }
+.red{ background:#c62828; }

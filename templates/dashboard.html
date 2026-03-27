@@ -165,6 +165,11 @@ transform:translateY(0);
 Upload Excel
 </button>
 
+<!-- Download Excel Template Button (ADDED) -->
+<button class="upload-btn" onclick="location.href='/download_template'">
+Download Excel Template
+</button>
+
 <div class="menu">
 
 <button onclick="location.href='/offers/total'">
@@ -226,7 +231,34 @@ Dashboard Overview
 <h3>Cancelled</h3>
 <p>{{cancelled}}</p>
 </div>
+<div class="status-grid">
 
+    <div class="card green">
+        <h3>Verified</h3>
+        <p>{{ verified }}</p>
+    </div>
+
+    <div class="card yellow">
+        <h3>Verification Pending</h3>
+        <p>{{ verification_pending }}</p>
+    </div>
+
+    <div class="card red">
+        <h3>Rejected</h3>
+        <p>{{ rejected }}</p>
+    </div>
+<td>
+{% if offer.verification_status == "verified" %}
+    <span style="color:green;">✔ Verified</span>
+{% elif offer.verification_status == "pending" %}
+    <span style="color:orange;">⏳ Pending</span>
+{% elif offer.verification_status == "rejected" %}
+    <span style="color:red;">❌ Rejected</span>
+{% else %}
+    <span>Not Started</span>
+{% endif %}
+</td>
+</div>
 </div>
 
 </div>

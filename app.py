@@ -309,6 +309,18 @@ def dashboard():
         declined=declined,
         cancelled=cancelled
     )
+#---------------- DOWNLOAD EXCEL TEMPLATE ----------------
+# ---------------- DOWNLOAD TEMPLATE ----------------
+@app.route("/download_template")
+def download_template():
+    columns = ["Name", "Role", "Status", "Joining Date", "Gmail id"]
+
+    df = pd.DataFrame(columns=columns)
+
+    file_path = "offer_template.xlsx"
+    df.to_excel(file_path, index=False)
+
+    return send_file(file_path, as_attachment=True)
 # ---------------- VIEW OFFERS BY STATUS ----------------
 @app.route("/offers/<status>")
 @login_required
@@ -773,7 +785,6 @@ def send_mail_function(pdf_path, data):
 
     accept_link = f"{BASE_URL}/accept/{token}"
     decline_link = f"{BASE_URL}/decline/{token}"
-    bg_link = f"{BASE_URL}/bg-verification/{token}"
     
     print("ACCEPT LINK:", accept_link)
     print("DECLINE LINK:", decline_link)
@@ -838,41 +849,6 @@ Decline Offer
 
 </td>
 </tr>
-
-<!-- 🔥 NEW BACKGROUND VERIFICATION SECTION -->
-
-<tr>
-<td align="center" style="padding-top:35px;">
-
-<div style="background:#f1f5ff;border-radius:6px;padding:20px;margin-top:10px;">
-
-<h3 style="color:#1a73e8;margin-bottom:10px;">
-Background Verification
-</h3>
-
-<p style="font-size:14px;color:#555;line-height:1.6;">
-As part of our hiring process, please complete your background verification form.
-This step is mandatory for onboarding.
-</p>
-
-<a href="{bg_link}"
-style="background:#1a73e8;color:white;
-padding:10px 24px;
-text-decoration:none;
-font-size:14px;
-font-weight:600;
-border-radius:5px;
-display:inline-block;margin-top:10px;">
-Complete Verification
-</a>
-
-</div>
-
-</td>
-</tr>
-
-<!-- END SECTION -->
-
 <tr>
 <td align="center" style="padding-top:25px;">
 
@@ -1089,7 +1065,20 @@ def decline(token):
 #----------------- BACKGROUND VERIFICATION ----------------
 @app.route("/bg-verification/<token>", methods=["GET", "POST"])
 def bg_verification(token):
+    with sqlite3.connect(DB) as conn:
+        conn.row_factory = sqlite3.Row
 
+        offer = conn.execute(
+            "SELECT status FROM offers WHERE token=?",
+            (token,)
+        ).fetchone()
+
+    if not offer:
+        return "<h2>Invalid Link ❌</h2>"
+
+    # 🔥 ADD THIS CHECK
+    if offer["status"] != "accepted":
+        return "<h2>Access Denied ❌<br>Please accept the offer first.</h2>"
     if request.method == "POST":
 
         name = request.form["name"]
@@ -1189,18 +1178,97 @@ def verify_employer(token):
     status = request.args.get("status")
 
     if status not in ["verified", "rejected"]:
-        return "Invalid"
+        return "<h3>Invalid Request ❌</h3>"
 
-    with sqlite3.connect(DB) as conn:
-        conn.execute("""
-            UPDATE employment_history
-            SET verification_status=?
-            WHERE verification_token=?
-        """, (status, token))
+    try:
+        with sqlite3.connect(DB) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-        conn.commit()
+            # ✅ Update that company's status
+            cursor.execute("""
+                UPDATE employment_history
+                SET verification_status=?
+                WHERE verification_token=?
+            """, (status, token))
 
-    return f"<h2>Response Recorded: {status.upper()}</h2>"
+            # ❌ If token not found
+            if cursor.rowcount == 0:
+                return "<h3>Invalid or Expired Link ❌</h3>"
+
+            # ✅ Get bg_id
+            cursor.execute("""
+                SELECT bg_id FROM employment_history
+                WHERE verification_token=?
+            """, (token,))
+            row = cursor.fetchone()
+            bg_id = row["bg_id"]
+
+            # ✅ Get offer token
+            cursor.execute("""
+                SELECT offer_token FROM bg_verifications
+                WHERE id=?
+            """, (bg_id,))
+            row = cursor.fetchone()
+            offer_token = row["offer_token"]
+
+            # ✅ Get all company statuses
+            cursor.execute("""
+                SELECT verification_status FROM employment_history
+                WHERE bg_id=?
+            """, (bg_id,))
+            statuses = [r["verification_status"] for r in cursor.fetchall()]
+
+            # ✅ Decide final status
+            if all(s == "verified" for s in statuses):
+                final_status = "verified"
+            elif any(s == "rejected" for s in statuses):
+                final_status = "rejected"
+            else:
+                final_status = "pending"
+
+            # ✅ Update offers table
+            cursor.execute("""
+                UPDATE offers
+                SET verification_status=?
+                WHERE token=?
+            """, (final_status, offer_token))
+
+            conn.commit()
+
+        # 🎨 Professional UI Response
+        return f"""
+        <html>
+        <head>
+        <style>
+            body {{
+                font-family:Segoe UI;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                height:100vh;
+                background:#f5f7fb;
+            }}
+            .card {{
+                background:white;
+                padding:30px;
+                border-radius:10px;
+                box-shadow:0 10px 30px rgba(0,0,0,0.1);
+                text-align:center;
+            }}
+        </style>
+        </head>
+        <body>
+            <div class="card">
+                <h2>✅ Verification {status.capitalize()}</h2>
+                <p>Thank you for your response.</p>
+            </div>
+        </body>
+        </html>
+        """
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 # ---------------- LOGOUT ----------------
 
 @app.route("/logout")
