@@ -4,7 +4,6 @@
 <title>Background Verification</title>
 
 <style>
-
 body{
     font-family: 'Segoe UI', sans-serif;
     background:#f5f7fb;
@@ -41,6 +40,7 @@ button{
     margin-top:20px;
     width:100%;
     font-weight:600;
+    cursor:pointer;
 }
 
 .company-block{
@@ -49,7 +49,6 @@ button{
     border:1px dashed #ccc;
     border-radius:6px;
 }
-
 </style>
 </head>
 
@@ -69,12 +68,14 @@ button{
 <input name="aadhaar" placeholder="Aadhaar Number">
 <input name="pan" placeholder="PAN Number">
 
-<select name="experience" onchange="toggleCompanies(this.value)">
+<!-- ✅ FIXED FIELD -->
+<select name="experience_type" onchange="toggleCompanies(this.value)" required>
 <option value="">Select Experience</option>
 <option value="fresher">Fresher</option>
 <option value="experienced">Experienced</option>
 </select>
 
+<!-- ✅ COMPANY SECTION -->
 <div id="companies" style="display:none;">
     <h3>Previous Companies</h3>
 
@@ -94,21 +95,7 @@ button{
 </form>
 
 </div>
-<select name="experience_type" onchange="toggleExperience(this.value)">
-<option value="fresher">Fresher</option>
-<option value="experienced">Experienced</option>
-</select>
 
-<div id="experience_section" style="display:none;">
-    <!-- company fields -->
-</div>
-
-<script>
-function toggleExperience(val){
-    document.getElementById("experience_section").style.display =
-        val === "experienced" ? "block" : "none";
-}
-</script>
 <script>
 function toggleCompanies(val){
     document.getElementById("companies").style.display =
@@ -116,14 +103,14 @@ function toggleCompanies(val){
 }
 
 function addCompany(){
-    document.getElementById("companies").innerHTML += `
+    document.getElementById("companies").insertAdjacentHTML('beforeend', `
     <div class="company-block">
         <input name="company[]" placeholder="Company Name">
         <input name="hr_email[]" placeholder="HR Email">
         <input name="role[]" placeholder="Role">
         <input name="start_date[]" placeholder="Start Date">
         <input name="end_date[]" placeholder="End Date">
-    </div>`;
+    </div>`);
 }
 </script>
 
