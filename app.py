@@ -93,6 +93,10 @@ def init_db():
             verification_token TEXT
             )
         """)
+        try:
+            conn.execute("ALTER TABLE employment_history ADD COLUMN offer_token TEXT")
+        except:
+            pass
     print("✅ Tables 'users' and 'offers' are ready.")
 # Call the function once at app startup
 init_db()
