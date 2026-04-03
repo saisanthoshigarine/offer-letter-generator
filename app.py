@@ -352,6 +352,11 @@ def download_template():
     df.to_excel(file_path, index=False)
 
     return send_file(file_path, as_attachment=True)
+#-----------------LOGOUT----------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 # ---------------- VIEW OFFERS BY STATUS ----------------
 @app.route("/offers/<status>")
 @login_required
@@ -1351,13 +1356,6 @@ def verify_employer(token):
 
     except Exception as e:
         return f"Error: {str(e)}"
-# ---------------- LOGOUT ----------------
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
 # ---------------- RUN ----------------
 
 if __name__ == "__main__":
