@@ -662,10 +662,15 @@ def preview_file(filename):
 @app.route("/preview", methods=["GET","POST"])
 @login_required
 def preview():
+
     data_list = session["excel_data"]
     template = session["template"]
 
-    data = data_list[0]
+    # Get selected person index (default = first person)
+    selected = request.args.get("person", 0)
+    selected = int(selected)
+
+    data = data_list[selected]
 
     joining_raw = data["Joining date"]
     joining_date = joining_raw.strftime("%d %B %Y") if hasattr(joining_raw, "strftime") else str(joining_raw)
@@ -686,11 +691,14 @@ def preview():
 
             for row in data_list:
 
+                joining_raw = row["Joining date"]
+                joining_date = joining_raw.strftime("%d %B %Y") if hasattr(joining_raw, "strftime") else str(joining_raw)
+
                 pdf_path = generate_pdf(template.format(
                     Name=row["Name"],
                     Role=row["Role"],
                     Status=row["Status"],
-                    Joining_date=row["Joining date"]
+                    Joining_date=joining_date
                 ), preview=False)
 
                 send_mail_function(pdf_path, row)
@@ -708,11 +716,14 @@ def preview():
 
                 for row in data_list:
 
+                    joining_raw = row["Joining date"]
+                    joining_date = joining_raw.strftime("%d %B %Y") if hasattr(joining_raw, "strftime") else str(joining_raw)
+
                     pdf_path = generate_pdf(template.format(
                         Name=row["Name"],
                         Role=row["Role"],
                         Status=row["Status"],
-                        Joining_date=row["Joining date"]
+                        Joining_date=joining_date
                     ), preview=False)
 
                     zip_file.write(pdf_path, os.path.basename(pdf_path))
@@ -734,7 +745,9 @@ def preview():
     return render_template(
         "preview.html",
         content=content,
-        pdf_file=preview_file_name
+        pdf_file=preview_file_name,
+        members=data_list,      # 👈 send names list
+        selected=selected       # 👈 currently selected person
     )
 # ---------------- GENERATE PDF ----------------
 def generate_pdf(content, preview=False):
