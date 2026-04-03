@@ -312,18 +312,23 @@ def dashboard():
             (session["user_id"],)
         ).fetchone()[0]
 
-# Verified (including freshers)
+        # ✅ VERIFIED
         verified = conn.execute(
-            "SELECT COUNT(DISTINCT offer_token) FROM employment_history WHERE verification_status='verified'"
-        ).fetchone()[0]
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='accepted' AND verification_status='verified'",
+            (session["user_id"],)
+            ).fetchone()[0]
 
-# Rejected
+        # ✅ REJECTED
         rejected = conn.execute(
-            "SELECT COUNT(DISTINCT offer_token) FROM employment_history WHERE verification_status='rejected'"
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='accepted' AND verification_status='rejected'", 
+            (session["user_id"],)
         ).fetchone()[0]
 
-# 🔥 Pending = Accepted - (Verified + Rejected)
-        verification_pending = accepted - (verified + rejected)
+# ✅ PENDING (ONLY FROM ACCEPTED)
+        verification_pending = conn.execute(
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='accepted' AND verification_status='pending'",
+            (session["user_id"],)
+        ).fetchone()[0]
 
     return render_template(
         "dashboard.html",
@@ -1142,7 +1147,7 @@ def bg_verification(token):
                 """, (token,))
                 conn.commit()
 
-            return "<h2>Verification Completed ✅ (Fresher - Auto Verified)</h2>"
+            return "<h2>Verification Completed ✅</h2>"
 
         # =========================================
         # 🔥 CASE 2: EXPERIENCED → NORMAL FLOW
