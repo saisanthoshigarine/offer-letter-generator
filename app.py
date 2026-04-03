@@ -146,14 +146,15 @@ def login():
 def register():
     if request.method == "POST":
         username = request.form["username"]
+        email = request.form["email"]
         password = request.form["password"]
 
         hashed_password = generate_password_hash(password)
 
         with sqlite3.connect(DB) as conn:
             conn.execute(
-                "INSERT INTO users(username,password) VALUES(?,?)",
-                (username, hashed_password)
+                "INSERT INTO users(username, email, password) VALUES(?,?,?)",
+                (username, email, hashed_password)
             )
 
         return redirect("/")
@@ -291,11 +292,12 @@ def dashboard():
             (session["user_id"],)
         ).fetchone()[0]
 
+        # Accepted = base
         accepted = conn.execute(
-            "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='accepted'",
-            (session["user_id"],)
+            "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='accepted'", 
+            (session["user_id"] ,)
         ).fetchone()[0]
-
+        
         declined = conn.execute(
             "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='declined'",
             (session["user_id"],)
@@ -305,20 +307,19 @@ def dashboard():
             "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='cancelled'",
             (session["user_id"],)
         ).fetchone()[0]
+
+# Verified (including freshers)
         verified = conn.execute(
-            "SELECT COUNT(*) FROM offers WHERE user_id=? AND verification_status='verified'",
-            (session["user_id"],)
+            "SELECT COUNT(DISTINCT offer_token) FROM employment_history WHERE verification_status='verified'"
         ).fetchone()[0]
 
-        verification_pending = conn.execute(
-            "SELECT COUNT(*) FROM offers WHERE user_id=? AND verification_status='pending'",
-            (session["user_id"],)
-        ).fetchone()[0]
-
+# Rejected
         rejected = conn.execute(
-            "SELECT COUNT(*) FROM offers WHERE user_id=? AND verification_status='rejected'",
-            (session["user_id"],)
+            "SELECT COUNT(DISTINCT offer_token) FROM employment_history WHERE verification_status='rejected'"
         ).fetchone()[0]
+
+# 🔥 Pending = Accepted - (Verified + Rejected)
+        verification_pending = accepted - (verified + rejected)
 
     return render_template(
         "dashboard.html",
@@ -353,19 +354,40 @@ def view_offers(status):
         if status == "total":
             # Show ALL offers for logged-in user
             offers = conn.execute(
-                "SELECT name, email, role, joining_date, status FROM offers WHERE user_id=?",
+                "SELECT name, email, role, joining_date, verification_status FROM offers WHERE user_id=?",
                 (session["user_id"],)
             ).fetchall()
         else:
             # Show filtered offers
             offers = conn.execute(
-                "SELECT name, email, role, joining_date, status FROM offers WHERE user_id=? AND status=?",
+                "SELECT name, email, role, joining_date, verification_status FROM offers WHERE user_id=? AND status=?",
                 (session["user_id"], status)
             ).fetchall()
 
     return render_template("offer_list.html", offers=offers, status=status)
-# ---------------- UPLOAD ----------------
+#----------------VERIFICATION STATUS VIEW----------------
+@app.route("/verification/<status>")
+@login_required
+def verification_list(status):
 
+    with sqlite3.connect(DB) as conn:
+        conn.row_factory = sqlite3.Row
+
+        data = conn.execute("""
+            SELECT 
+                o.name,
+                o.email,
+                b.phone,
+                COUNT(e.id) as experience
+            FROM offers o
+            LEFT JOIN bg_verifications b ON o.token = b.offer_token
+            LEFT JOIN employment_history e ON b.id = e.bg_id
+            WHERE o.user_id=? AND o.verification_status=?
+            GROUP BY o.id
+        """, (session["user_id"], status)).fetchall()
+
+    return render_template("verification_list.html", data=data, status=status)
+# ---------------- UPLOAD ----------------
 @app.route("/upload", methods=["GET","POST"])
 @login_required
 def upload():

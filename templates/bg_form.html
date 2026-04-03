@@ -94,7 +94,21 @@ button{
 </form>
 
 </div>
+<select name="experience_type" onchange="toggleExperience(this.value)">
+<option value="fresher">Fresher</option>
+<option value="experienced">Experienced</option>
+</select>
 
+<div id="experience_section" style="display:none;">
+    <!-- company fields -->
+</div>
+
+<script>
+function toggleExperience(val){
+    document.getElementById("experience_section").style.display =
+        val === "experienced" ? "block" : "none";
+}
+</script>
 <script>
 function toggleCompanies(val){
     document.getElementById("companies").style.display =
