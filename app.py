@@ -1112,18 +1112,41 @@ def bg_verification(token):
             (token,)
         ).fetchone()
 
+    # ❌ Invalid link
     if not offer:
         return "<h2>Invalid Link ❌</h2>"
 
-    # 🔥 ADD THIS CHECK
+    # ❌ Not accepted yet
     if offer["status"] != "accepted":
         return "<h2>Access Denied ❌<br>Please accept the offer first.</h2>"
+
+    # ✅ FORM SUBMIT
     if request.method == "POST":
 
-        name = request.form["name"]
-        phone = request.form["phone"]
-        address = request.form["address"]
+        name = request.form.get("name")
+        phone = request.form.get("phone")
+        address = request.form.get("address")
 
+        # 🔥 NEW FIELD (VERY IMPORTANT)
+        experience_type = request.form.get("experience_type")
+
+        # =========================================
+        # 🔥 CASE 1: FRESHER → AUTO VERIFY
+        # =========================================
+        if experience_type == "fresher":
+            with sqlite3.connect(DB) as conn:
+                conn.execute("""
+                    UPDATE offers
+                    SET verification_status='verified'
+                    WHERE token=?
+                """, (token,))
+                conn.commit()
+
+            return "<h2>Verification Completed ✅ (Fresher - Auto Verified)</h2>"
+
+        # =========================================
+        # 🔥 CASE 2: EXPERIENCED → NORMAL FLOW
+        # =========================================
         companies = request.form.getlist("company[]")
         emails = request.form.getlist("hr_email[]")
         roles = request.form.getlist("role[]")
@@ -1133,6 +1156,7 @@ def bg_verification(token):
         with sqlite3.connect(DB) as conn:
             cursor = conn.cursor()
 
+            # Insert BG record
             cursor.execute("""
                 INSERT INTO bg_verifications
                 (offer_token, candidate_name, phone, address, submitted_at)
@@ -1141,15 +1165,19 @@ def bg_verification(token):
 
             bg_id = cursor.lastrowid
 
-            # 🔥 Send emails to previous companies
+            # 🔥 Insert employment + send emails
             for i in range(len(companies)):
+
+                # Skip empty rows (important fix)
+                if not companies[i].strip():
+                    continue
 
                 verify_token = str(uuid.uuid4())
 
                 cursor.execute("""
                     INSERT INTO employment_history
-                    (bg_id, company_name, hr_email, role, start_date, end_date, verification_token)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (bg_id, company_name, hr_email, role, start_date, end_date, verification_token, offer_token)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     bg_id,
                     companies[i],
@@ -1157,9 +1185,11 @@ def bg_verification(token):
                     roles[i],
                     starts[i],
                     ends[i],
-                    verify_token
+                    verify_token,
+                    token   # 🔥 IMPORTANT FIX
                 ))
 
+                # Send email
                 send_verification_email(
                     emails[i],
                     name,
@@ -1169,10 +1199,18 @@ def bg_verification(token):
                     verify_token
                 )
 
+            # 🔥 Mark as pending after submission
+            cursor.execute("""
+                UPDATE offers
+                SET verification_status='pending'
+                WHERE token=?
+            """, (token,))
+
             conn.commit()
 
-        return "<h2>Verification Submitted ✅</h2>"
+        return "<h2>Verification Submitted ✅ (Under Review)</h2>"
 
+    # ✅ LOAD PAGE
     return render_template("bg_form.html")
 #----------------- SEND VERIFICATION EMAIL ----------------
 def send_verification_email(email, candidate, role, start, end, token):
