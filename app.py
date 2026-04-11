@@ -373,15 +373,13 @@ def view_offers(status):
         conn.row_factory = sqlite3.Row
 
         if status == "total":
-            # Show ALL offers for logged-in user
             offers = conn.execute(
-                "SELECT name, email, role, joining_date, verification_status FROM offers WHERE user_id=?",
+                "SELECT name, email, role, joining_date, status FROM offers WHERE user_id=?",
                 (session["user_id"],)
             ).fetchall()
         else:
-            # Show filtered offers
             offers = conn.execute(
-                "SELECT name, email, role, joining_date, verification_status FROM offers WHERE user_id=? AND status=?",
+                "SELECT name, email, role, joining_date, status FROM offers WHERE user_id=? AND status=?",
                 (session["user_id"], status)
             ).fetchall()
 

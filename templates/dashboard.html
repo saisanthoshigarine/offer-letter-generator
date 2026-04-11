@@ -74,7 +74,6 @@ body{display:flex;background:#f2f5fb;height:100vh}
     <button onclick="location.href='/upload'">📤 Upload Excel</button>
     <button onclick="location.href='/download_template'">📥 Download Excel</button>
     <button class="active" onclick="location.href='/dashboard'">📊 Dashboard</button>
-    <button onclick="location.href='/offers/total'">📄 All Offers</button>
   </div>
 
   <div class="section-title">OFFER STATUS</div>
@@ -134,17 +133,24 @@ body{display:flex;background:#f2f5fb;height:100vh}
   </div>
 </div>
 
-    <div class="verify-grid">
-  <div class="vcard verified" onclick="location.href='/verification/verified'">
-    Verified<br>{{verified}}
-  </div>
+    <div class="verification">
+  <h2>Verification Overview</h2>
 
-  <div class="vcard rejected" onclick="location.href='/verification/rejected'">
-    Rejected<br>{{rejected}}
-  </div>
+  <div class="verify-grid">
+    <div class="vcard verified" onclick="location.href='/verification/verified'">
+      <h3>Verified</h3>
+      <div class="big">{{verified}}</div>
+    </div>
 
-  <div class="vcard pending" onclick="location.href='/verification/pending'">
-    Pending<br>{{verification_pending}}
+    <div class="vcard rejected" onclick="location.href='/verification/rejected'">
+      <h3>Rejected</h3>
+      <div class="big">{{rejected}}</div>
+    </div>
+
+    <div class="vcard pending" onclick="location.href='/verification/pending'">
+      <h3>Pending</h3>
+      <div class="big">{{verification_pending}}</div>
+    </div>
   </div>
 </div>
     <div class="recent">

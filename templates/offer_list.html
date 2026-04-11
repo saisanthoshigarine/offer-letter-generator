@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -14,117 +13,140 @@ font-family:'Segoe UI',sans-serif;
 }
 
 body{
-background:linear-gradient(135deg,#0a1f44,#1e3c72);
-padding:40px;
+background:#f3f5f9;
+padding:30px;
 }
 
+/* Back Button */
+.back-btn{
+background:#3f4a7a;
+color:white;
+padding:10px 16px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-bottom:20px;
+}
+
+.back-btn:hover{
+opacity:0.9;
+}
+
+/* Container */
 .container{
 background:white;
-padding:30px;
-border-radius:12px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
-animation:fadeIn 0.6s ease;
+padding:25px;
+border-radius:14px;
+box-shadow:0 8px 25px rgba(0,0,0,0.08);
 }
 
-h2{
-margin-bottom:20px;
-color:#0a1f44;
+/* Heading */
+h1{
+font-size:28px;
+margin-bottom:5px;
 text-transform:capitalize;
 }
 
+.subtitle{
+color:#777;
+margin-bottom:20px;
+}
+
+/* Search */
+.search-box{
+background:white;
+padding:15px;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+margin-bottom:25px;
+}
+
+.search-box input{
+width:100%;
+padding:12px;
+border:none;
+outline:none;
+font-size:14px;
+}
+
+/* Table */
 table{
 width:100%;
 border-collapse:collapse;
 }
 
 th{
-background:#0a1f44;
-color:white;
-padding:12px;
 text-align:left;
-}
-
-td{
-padding:12px;
+font-size:14px;
+color:#777;
+padding:14px;
 border-bottom:1px solid #eee;
 }
 
-tr:hover{
-background:#f5f8ff;
+td{
+padding:16px 14px;
+border-bottom:1px solid #f0f0f0;
 }
 
-/* Status badges */
+tr:hover{
+background:#f9fbff;
+}
 
-.badge{
-padding:6px 12px;
-border-radius:20px;
-font-size:13px;
+/* Bold Name */
+.name{
 font-weight:600;
 }
 
+/* Status badges */
+.badge{
+padding:6px 14px;
+border-radius:20px;
+font-size:13px;
+font-weight:500;
+}
+
+/* Status Colors */
 .accepted{
-background:#d4edda;
-color:#28a745;
+background:#eaf8ef;
+color:#0a8a3e;
 }
 
 .declined{
-background:#f8d7da;
-color:#dc3545;
+background:#ffeaea;
+color:#c22121;
 }
 
 .pending{
-background:#fff3cd;
-color:#856404;
+background:#fff3e4;
+color:#d87400;
 }
 
 .cancelled{
-background:#e2e3e5;
-color:#6c757d;
+background:#f3f4f6;
+color:#444;
 }
-
-/* Back button */
-
-.back{
-margin-top:20px;
-}
-
-.back button{
-padding:10px 18px;
-border:none;
-background:#0a1f44;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-.back button:hover{
-background:#1e90ff;
-}
-
-/* Animation */
-
-@keyframes fadeIn{
-from{
-opacity:0;
-transform:translateY(20px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
 </style>
 </head>
 
 <body>
 
+<button class="back-btn" onclick="location.href='/dashboard'">
+← Back to Dashboard
+</button>
+
 <div class="container">
 
-<h2>{{status}} Offer Letters</h2>
+<h1>{{status}} Offers</h1>
+<div class="subtitle">Manage and track all your offers</div>
 
-<table>
+<!-- Search -->
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="🔍 Search by name, email, role...">
+</div>
 
+<table id="offerTable">
+
+<thead>
 <tr>
 <th>Name</th>
 <th>Email</th>
@@ -132,35 +154,57 @@ transform:translateY(0);
 <th>Joining Date</th>
 <th>Status</th>
 </tr>
+</thead>
+
+<tbody>
 
 {% for offer in offers %}
-
 <tr>
 
-<td>{{offer.name}}</td>
+<td class="name">{{offer.name}}</td>
 <td>{{offer.email}}</td>
 <td>{{offer.role}}</td>
 <td>{{offer.joining_date}}</td>
 
 <td>
-<span class="badge {{status}}">
-{{status}}
-</span>
+{% if offer.status == 'accepted' %}
+  <span class="badge accepted">Accepted</span>
+
+{% elif offer.status == 'declined' %}
+  <span class="badge declined">Declined</span>
+
+{% elif offer.status == 'action_pending' %}
+  <span class="badge pending">Pending</span>
+
+{% elif offer.status == 'cancelled' %}
+  <span class="badge cancelled">Cancelled</span>
+
+{% else %}
+  <span class="badge">{{offer.status}}</span>
+{% endif %}
 </td>
 
 </tr>
-
 {% endfor %}
+
+</tbody>
 
 </table>
 
-<div class="back">
-<button onclick="location.href='/dashboard'">
-⬅ Back to Dashboard
-</button>
 </div>
 
-</div>
+<!-- Search Script -->
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+  let filter = this.value.toLowerCase();
+  let rows = document.querySelectorAll("#offerTable tbody tr");
+
+  rows.forEach(row => {
+    let text = row.innerText.toLowerCase();
+    row.style.display = text.includes(filter) ? "" : "none";
+  });
+});
+</script>
 
 </body>
 </html>
