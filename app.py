@@ -329,7 +329,13 @@ def dashboard():
             "SELECT COUNT(*) FROM offers WHERE user_id=? AND status='accepted' AND verification_status='pending'",
             (session["user_id"],)
         ).fetchone()[0]
-
+        recent_offers = conn.execute("""
+            SELECT name, email, role, joining_date, status
+            FROM offers
+            WHERE user_id=?
+            ORDER BY id DESC
+            LIMIT 5
+        """, (session["user_id"],)).fetchall()
     return render_template(
         "dashboard.html",
         total=total,
@@ -339,7 +345,8 @@ def dashboard():
         cancelled=cancelled,
         verified=verified,
         verification_pending=verification_pending,
-        rejected=rejected
+        rejected=rejected,
+        recent_offers=recent_offers
     )
 # ---------------- DOWNLOAD TEMPLATE ----------------
 @app.route("/download_template")
