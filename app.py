@@ -407,32 +407,67 @@ def verification_list(status):
 
     return render_template("verification_list.html", data=data, status=status)
 # ---------------- UPLOAD ----------------
-@app.route("/upload", methods=["GET","POST"])
+@app.route("/upload", methods=["POST"])
 @login_required
 def upload():
 
-    if request.method == "POST":
-        file = request.files["file"]
+    company = request.form.get("company")
+    letterhead = request.files.get("letterhead")
+    excel_file = request.files.get("file")
 
-        if not file.filename.endswith(".xlsx"):
-            return "File not supported"
+    if not company:
+        return "Company name required"
 
-        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
+    if not letterhead or not letterhead.filename.endswith(".pdf"):
+        return "Upload valid letterhead PDF"
 
-        df = pd.read_excel(filepath)
+    if not excel_file or not excel_file.filename.endswith(".xlsx"):
+        return "Upload valid Excel"
 
-        required = ["Name","Status","Role","Joining date","Gmail id"]
+    # ✅ Save company
+    session["company"] = company
 
-        for col in required:
-            if col not in df.columns:
-                return "File doesn't have required information"
+    # ✅ Save letterhead
+    company_clean = company.replace(" ", "").lower()
+    letterhead_folder = os.path.join(app.root_path, "static", "letterheads")
+    os.makedirs(letterhead_folder, exist_ok=True)
 
-        session["excel_data"] = df.to_dict(orient="records")
-        return redirect("/company")
+    letterhead_path = os.path.join(
+        letterhead_folder,
+        f"{company_clean}_letterhead.pdf"
+    )
 
-    return render_template("upload.html")
+    letterhead.save(letterhead_path)
 
+    # ✅ Save Excel
+    filepath = os.path.join(UPLOAD_FOLDER, excel_file.filename)
+    excel_file.save(filepath)
+
+    df = pd.read_excel(filepath)
+
+    required = ["Name","Status","Role","Joining date","Gmail id"]
+
+    for col in required:
+        if col not in df.columns:
+            return "Excel missing required columns"
+
+    session["excel_data"] = df.to_dict(orient="records")
+
+    # ✅ GO TO WORKTYPE DIRECTLY
+    return redirect("/worktype")
+# ---------------- OVERVIEW ----------------
+@app.route("/overview")
+@login_required
+def overview():
+
+    data = session.get("excel_data", [])
+
+    if not data:
+        return redirect("/upload")
+
+    total = len(data)
+
+    return render_template("overview.html", total=total, data=data)
 # ---------------- COMPANY ----------------
 
 @app.route("/company", methods=["GET","POST"])

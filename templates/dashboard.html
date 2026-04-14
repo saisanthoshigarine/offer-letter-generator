@@ -28,6 +28,37 @@ body{display:flex;background:#f2f5fb;height:100vh}
 .chart-box{background:#fff;padding:20px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.08)}
 .chart-box h3{margin-bottom:10px;font-size:16px}
 
+.card{
+border-radius:14px;
+padding:25px;
+box-shadow:0 6px 20px rgba(0,0,0,.08);
+cursor:pointer;
+transition:.25s;
+color:white;
+}
+
+.card:hover{
+transform:translateY(-6px) scale(1.02);
+}
+
+/* Individual Colors */
+.card.total{background:linear-gradient(135deg,#6366f1,#4f46e5);}
+.card.accepted{background:linear-gradient(135deg,#22c55e,#16a34a);}
+.card.declined{background:linear-gradient(135deg,#ef4444,#dc2626);}
+.card.pending{background:linear-gradient(135deg,#f59e0b,#d97706);}
+.card.cancelled{background:linear-gradient(135deg,#6b7280,#4b5563);}
+
+/* Text */
+.card h4{
+font-size:14px;
+margin-bottom:8px;
+opacity:0.9;
+}
+
+.card .count{
+font-size:32px;
+font-weight:700;
+}
 /* Content */
 .content{flex:1}
 
@@ -71,9 +102,9 @@ body{display:flex;background:#f2f5fb;height:100vh}
   <h2>Offer System</h2>
 
   <div class="menu">
+    <button class="active" onclick="location.href='/dashboard'">📊 Dashboard</button>
     <button onclick="location.href='/upload'">📤 Upload Excel</button>
     <button onclick="location.href='/download_template'">📥 Download Excel</button>
-    <button class="active" onclick="location.href='/dashboard'">📊 Dashboard</button>
   </div>
 
   <div class="section-title">OFFER STATUS</div>
@@ -123,7 +154,7 @@ body{display:flex;background:#f2f5fb;height:100vh}
   </div>
 
   <div class="card" onclick="location.href='/offers/action_pending'">
-    <h4>ActionPending</h4>
+    <h4>Action Pending</h4>
     <div class="count">{{pending}}</div>
   </div>
 
@@ -152,6 +183,36 @@ body{display:flex;background:#f2f5fb;height:100vh}
       <div class="big">{{verification_pending}}</div>
     </div>
   </div>
+  <div style="margin-top:30px; padding:20px; background:#ffffff; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+
+    <h3>Upload Offer Details</h3>
+
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+
+        <!-- Company Name -->
+        <label><b>Company Name</b></label><br>
+        <input type="text" name="company" required
+               style="width:100%; padding:10px; margin-top:5px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc;">
+
+        <!-- Letterhead Upload -->
+        <label><b>Upload Company Letterhead (PDF)</b></label><br>
+        <input type="file" name="letterhead" accept=".pdf" required
+               style="margin-top:5px; margin-bottom:15px;">
+
+        <!-- Excel Upload -->
+        <label><b>Upload Candidate Excel</b></label><br>
+        <input type="file" name="file" accept=".xlsx" required
+               style="margin-top:5px; margin-bottom:20px;">
+
+        <!-- Submit -->
+        <button type="submit"
+                style="background:#1a73e8; color:white; padding:12px 20px; border:none; border-radius:6px; font-weight:bold;">
+            Upload & Continue
+        </button>
+
+    </form>
+
+</div>
 </div>
     <div class="recent">
       <h2>Recent Offers</h2>

@@ -1,0 +1,25 @@
+<h2>Verification Overview</h2>
+
+<p>Total Candidates: {{ total }}</p>
+
+<table border="1">
+<tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Role</th>
+</tr>
+
+{% for row in data %}
+<tr>
+    <td>{{ row["Name"] }}</td>
+    <td>{{ row["Gmail id"] }}</td>
+    <td>{{ row["Role"] }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<br>
+
+<a href="/worktype">
+    <button>Continue</button>
+</a>
